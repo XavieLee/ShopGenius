@@ -66,8 +66,9 @@ rules:
   - TypeScript (not plain JS).
   - async/await over promise chains.
   - ESLint + Prettier formatting.
-  - Include Jest test examples.
   - Keep React + Tailwind code **minimal, clean, and composable**.
+  - Generate test files only if explicitly requested, and ensure they are fully removed after use.
+  - Do **not** generate documentation files unless explicitly requested.
 
 - deliverables:
   - [ ] AI chat assistant UI + backend integration
@@ -140,8 +141,9 @@ rules:
   - TypeScript (not plain JS).
   - async/await over promise chains.
   - ESLint + Prettier formatting.
-  - Include Jest test examples.
   - Keep React + Tailwind code **minimal, clean, and composable**.
+  - Generate test files only if explicitly requested, and ensure they are fully removed after use.
+  - Do **not** generate documentation files unless explicitly requested.
 
 - deliverables:
   - [ ] AI chat assistant UI + backend integration

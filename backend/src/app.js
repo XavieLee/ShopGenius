@@ -11,12 +11,14 @@ const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/orders');
 const aiRoutes = require('./routes/ai');
 const userRoutes = require('./routes/users');
+const logRoutes = require('./routes/logs');
 
 const errorHandler = require('./middleware/errorHandler');
+const requestLogger = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // 安全中间件
 app.use(helmet());
@@ -25,7 +27,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-domain.com'] 
-    : ['http://localhost:10086', 'http://127.0.0.1:10086'],
+    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:10086', 'http://127.0.0.1:10086'],
   credentials: true
 }));
 
@@ -49,6 +51,9 @@ app.use('/api/ai/', aiLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// 请求日志中间件
+app.use(requestLogger);
+
 // 健康检查
 app.get('/health', (req, res) => {
   res.json({ 
@@ -66,6 +71,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/logs', logRoutes);
 
 // 404处理
 app.use('*', (req, res) => {
