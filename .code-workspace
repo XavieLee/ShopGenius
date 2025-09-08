@@ -1,0 +1,37 @@
+{
+    "folders": [
+        {
+            "name": "前端项目", // 文件夹在工作区中的显示名称（可选）
+            "path": "./frontend" // 项目文件夹路径（相对路径或绝对路径,推荐使用相对路径）
+        },
+        {
+            "name": "后端项目",
+            "path": "../backend" // 可以是不同位置的文件夹
+        },
+        {
+            "name": "共用组件库",
+            "path": "/Users/username/shared-components" // 绝对路径示例
+        }
+    ],
+    "settings": {
+        // 工作区级别的设置（会覆盖单个项目的设置）
+        "editor.tabSize": 2,
+        "files.exclude": {
+            // 排除所有项目中的node_modules
+            "**/node_modules": true,
+            // 排除前端项目的dist目录
+            "frontend/**/dist": true,
+            // 排除所有.git目录
+            "**/.git": true,
+            // 排除特定类型文件（如.log、.tmp）
+            "**/*.log": true,
+            "**/*.tmp": true
+        },
+        "search.exclude": {
+            // 搜索时忽略backend项目的vendor目录
+            "backend/vendor/**": true,
+            // 忽略所有项目的测试报告目录
+            "**/coverage": true
+        }
+    }
+}

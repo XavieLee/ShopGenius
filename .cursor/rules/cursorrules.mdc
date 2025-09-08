@@ -1,0 +1,152 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules for ShopGenius (React + Tailwind CSS)
+
+```rules
+project_name: ShopGenius
+framework: React + Tailwind CSS
+stack: 
+  frontend: React (with Tailwind CSS)
+  backend: Node.js (Express/NestJS) or Spring Boot
+  ai: OpenAI / 自建 LLM API
+  db: MongoDB / MySQL
+
+rules:
+
+- goal: >
+    Build the 1st version of the ShopGenius AI Shopping Website with an AI assistant,
+    conversational product search, product filtering, product listing, shopping cart, and payment.
+
+- features:
+  - AI Shopping Assistant
+    - Customers interact naturally with the assistant (text-based chat UI).
+    - AI handles product discovery, recommendations, Q&A.
+  
+  - Conversational Product Search
+    - Users can enter natural language queries.
+    - Queries are parsed → mapped to product attributes (category, price, color).
+    - Backend exposes `/search` endpoint with NLP + standard filtering.
+
+  - Product Filtering
+    - Natural language filters (e.g. "red shoes under $100").
+    - Combine with dropdown/checkbox filters (category, price range, rating).
+
+  - Product Listing
+    - Grid-based UI with product cards.
+    - Infinite scroll or pagination.
+    - “Similar products” and “Customers also bought” recommendations.
+
+  - Shopping Cart & Payment
+    - Add/remove/update cart items.
+    - Persist cart in local storage + backend.
+    - Integrate with Stripe (test mode) or PayPal sandbox.
+
+- frontend_guidelines:
+  - Use **React functional components with Hooks**.
+  - Use **Tailwind CSS** for all styling.
+    - Prefer utility classes (`flex`, `grid`, `p-4`, `rounded-xl`, etc).
+    - Responsive design by default (`sm:`, `md:`, `lg:` breakpoints).
+    - Use `dark:` variants where useful.
+  - Component structure:
+    - Reusable components in `/components`
+    - Page-level layouts in `/pages`
+    - State management with React Context or Zustand/Redux
+  - Always ensure clean, mobile-first UI.
+  - Accessibility: use semantic HTML + `aria-` attributes when needed.
+
+- backend_guidelines:
+  - Expose REST APIs for AI assistant, search, products, cart, payment.
+  - Secure with JWT auth.
+  - Proxy AI model requests through backend (no direct API key exposure).
+  - Write modular services for products, cart, and AI.
+
+- coding_guidelines:
+  - TypeScript (not plain JS).
+  - async/await over promise chains.
+  - ESLint + Prettier formatting.
+  - Include Jest test examples.
+  - Keep React + Tailwind code **minimal, clean, and composable**.
+
+- deliverables:
+  - [ ] AI chat assistant UI + backend integration
+  - [ ] Conversational product search + natural language filter
+  - [ ] Product listing (grid view with Tailwind)
+  - [ ] Shopping cart (persistent)
+  - [ ] Basic payment integration
+  - [ ] Deployment guide (local + cloud)
+# Cursor Rules for ShopGenius (React + Tailwind CSS)
+
+```rules
+project_name: ShopGenius
+framework: React + Tailwind CSS
+stack: 
+  frontend: React (with Tailwind CSS)
+  backend: Node.js (Express/NestJS) or Spring Boot
+  ai: OpenAI / 自建 LLM API
+  db: MongoDB / MySQL
+
+rules:
+
+- goal: >
+    Build the 1st version of the ShopGenius AI Shopping Website with an AI assistant,
+    conversational product search, product filtering, product listing, shopping cart, and payment.
+
+- features:
+  - AI Shopping Assistant
+    - Customers interact naturally with the assistant (text-based chat UI).
+    - AI handles product discovery, recommendations, Q&A.
+  
+  - Conversational Product Search
+    - Users can enter natural language queries.
+    - Queries are parsed → mapped to product attributes (category, price, color).
+    - Backend exposes `/search` endpoint with NLP + standard filtering.
+
+  - Product Filtering
+    - Natural language filters (e.g. "red shoes under $100").
+    - Combine with dropdown/checkbox filters (category, price range, rating).
+
+  - Product Listing
+    - Grid-based UI with product cards.
+    - Infinite scroll or pagination.
+    - “Similar products” and “Customers also bought” recommendations.
+
+  - Shopping Cart & Payment
+    - Add/remove/update cart items.
+    - Persist cart in local storage + backend.
+    - Integrate with Stripe (test mode) or PayPal sandbox.
+
+- frontend_guidelines:
+  - Use **React functional components with Hooks**.
+  - Use **Tailwind CSS** for all styling.
+    - Prefer utility classes (`flex`, `grid`, `p-4`, `rounded-xl`, etc).
+    - Responsive design by default (`sm:`, `md:`, `lg:` breakpoints).
+    - Use `dark:` variants where useful.
+  - Component structure:
+    - Reusable components in `/components`
+    - Page-level layouts in `/pages`
+    - State management with React Context or Zustand/Redux
+  - Always ensure clean, mobile-first UI.
+  - Accessibility: use semantic HTML + `aria-` attributes when needed.
+
+- backend_guidelines:
+  - Expose REST APIs for AI assistant, search, products, cart, payment.
+  - Secure with JWT auth.
+  - Proxy AI model requests through backend (no direct API key exposure).
+  - Write modular services for products, cart, and AI.
+
+- coding_guidelines:
+  - TypeScript (not plain JS).
+  - async/await over promise chains.
+  - ESLint + Prettier formatting.
+  - Include Jest test examples.
+  - Keep React + Tailwind code **minimal, clean, and composable**.
+
+- deliverables:
+  - [ ] AI chat assistant UI + backend integration
+  - [ ] Conversational product search + natural language filter
+  - [ ] Product listing (grid view with Tailwind)
+  - [ ] Shopping cart (persistent)
+  - [ ] Basic payment integration
+  - [ ] Deployment guide (local + cloud)
