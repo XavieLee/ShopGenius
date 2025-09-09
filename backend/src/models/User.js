@@ -4,63 +4,37 @@ const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
   id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    comment: '用户ID'
   },
   username: {
     type: DataTypes.STRING(50),
-    allowNull: false,
     unique: true,
-    validate: {
-      len: [3, 50],
-      notEmpty: true
-    }
+    comment: '用户名'
   },
   email: {
     type: DataTypes.STRING(100),
-    allowNull: false,
     unique: true,
-    validate: {
-      isEmail: true,
-      notEmpty: true
-    }
+    comment: '邮箱'
   },
-  password: {
+  password_hash: {
     type: DataTypes.STRING(255),
-    allowNull: false,
-    validate: {
-      len: [6, 255],
-      notEmpty: true
-    }
+    comment: '密码哈希'
+  },
+  avatar_url: {
+    type: DataTypes.STRING(500),
+    comment: '头像URL'
   },
   phone: {
     type: DataTypes.STRING(20),
-    allowNull: true,
-    validate: {
-      is: /^[0-9+\-\s()]+$/
-    }
-  },
-  avatar: {
-    type: DataTypes.STRING(255),
-    allowNull: true
-  },
-  role: {
-    type: DataTypes.ENUM('user', 'admin'),
-    defaultValue: 'user'
+    comment: '手机号'
   },
   status: {
     type: DataTypes.ENUM('active', 'inactive', 'banned'),
-    defaultValue: 'active'
-  },
-  last_login: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
-  preferences: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    defaultValue: {}
+    defaultValue: 'active',
+    comment: '用户状态'
   }
 }, {
   tableName: 'users',

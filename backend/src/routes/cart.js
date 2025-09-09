@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
+const { Product } = require('../models');
 
 // 模拟购物车存储（实际项目中应该使用数据库）
 let cartStorage = {};
@@ -34,7 +35,7 @@ router.get('/', (req, res) => {
 });
 
 // 添加到购物车
-router.post('/add', (req, res) => {
+router.post('/add', async (req, res) => {
   const { productId, quantity = 1, userId = 'default' } = req.body;
   
   logger.info('➕ 添加到购物车请求', {
@@ -51,70 +52,77 @@ router.post('/add', (req, res) => {
     });
   }
 
-  // 模拟商品数据（实际项目中应该从数据库获取）
-  const PRODUCTS = [
-    { id: 'p1', name: 'Velvet Matte Lipstick', price: 19, image: 'https://images.unsplash.com/photo-1582092728069-1d3d3b5c1a9c?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p2', name: 'AirRun Sneakers', price: 79, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p3', name: 'City Tote', price: 120, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p4', name: 'Noise-cancel Headphones', price: 149, image: 'https://images.unsplash.com/photo-1518443895914-6bf7961a8a6e?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p5', name: 'Trail Running Shoes', price: 95, image: 'https://images.unsplash.com/photo-1520256862855-398228c41684?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p6', name: 'Stainless Sports Bottle', price: 25, image: 'https://images.unsplash.com/photo-1599058917513-2918b9a6228d?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p7', name: 'Classic Leather Belt', price: 35, image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop' },
-    { id: 'p8', name: 'Mini Crossbody', price: 59, image: 'https://images.unsplash.com/photo-1591348279358-0b09b5e8b5e7?q=80&w=800&auto=format&fit=crop' }
-  ];
-
-  const product = PRODUCTS.find(p => p.id === productId);
-  if (!product) {
-    logger.warn('❌ 添加到购物车失败: 商品不存在', { productId });
-    return res.status(404).json({
-      success: false,
-      message: '商品不存在'
-    });
-  }
-
-  // 初始化用户购物车
-  if (!cartStorage[userId]) {
-    cartStorage[userId] = [];
-  }
-
-  // 检查商品是否已在购物车中
-  const existingItem = cartStorage[userId].find(item => item.productId === productId);
-  
-  if (existingItem) {
-    // 更新数量
-    existingItem.quantity += quantity;
-    logger.info('✅ 购物车商品数量更新', {
-      productId,
-      productName: product.name,
-      newQuantity: existingItem.quantity,
-      userId
-    });
-  } else {
-    // 添加新商品
-    cartStorage[userId].push({
-      productId: productId,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: quantity,
-      addedAt: new Date().toISOString()
-    });
-    logger.info('✅ 新商品添加到购物车', {
-      productId,
-      productName: product.name,
-      quantity,
-      userId
-    });
-  }
-
-  res.json({
-    success: true,
-    message: '添加到购物车成功',
-    data: {
-      productId: productId,
-      quantity: existingItem ? existingItem.quantity : quantity
+  try {
+    // 从数据库查询商品信息
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      logger.warn('❌ 添加到购物车失败: 商品不存在', { productId });
+      return res.status(404).json({
+        success: false,
+        message: '商品不存在'
+      });
     }
-  });
+
+    // 检查商品状态
+    if (product.status !== 'active') {
+      logger.warn('❌ 添加到购物车失败: 商品已下架', { productId, status: product.status });
+      return res.status(400).json({
+        success: false,
+        message: '商品已下架'
+      });
+    }
+
+    // 初始化用户购物车
+    if (!cartStorage[userId]) {
+      cartStorage[userId] = [];
+    }
+
+    // 检查商品是否已在购物车中
+    const existingItem = cartStorage[userId].find(item => item.productId === productId);
+    
+    if (existingItem) {
+      // 更新数量
+      existingItem.quantity += quantity;
+      logger.info('✅ 购物车商品数量更新', {
+        productId,
+        productName: product.name,
+        newQuantity: existingItem.quantity,
+        userId
+      });
+    } else {
+      // 添加新商品
+      cartStorage[userId].push({
+        productId: productId,
+        name: product.name,
+        price: parseFloat(product.price),
+        image: product.image_url,
+        quantity: quantity,
+        addedAt: new Date().toISOString()
+      });
+      logger.info('✅ 新商品添加到购物车', {
+        productId,
+        productName: product.name,
+        quantity,
+        userId
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '添加到购物车成功',
+      data: {
+        productId: productId,
+        quantity: existingItem ? existingItem.quantity : quantity
+      }
+    });
+  } catch (error) {
+    logger.error('❌ 添加到购物车失败', { productId, error: error.message });
+    res.status(500).json({
+      success: false,
+      message: '添加到购物车失败',
+      error: error.message
+    });
+  }
 });
 
 // 更新购物车商品数量

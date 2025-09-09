@@ -1,15 +1,14 @@
 const { Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
+const envConfig = require('./env');
+
+// 获取数据库配置
+const dbConfig = envConfig.getDatabaseConfig();
 
 // 数据库配置
 const sequelize = new Sequelize({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  database: process.env.DB_NAME || 'shopgenius',
-  username: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  dialect: 'mysql',
-  logging: process.env.NODE_ENV === 'development' ? 
+  ...dbConfig,
+  logging: envConfig.get('NODE_ENV') === 'development' ? 
     (msg) => logger.debug(msg) : false,
   pool: {
     max: 5,

@@ -3,9 +3,9 @@ const { sequelize } = require('../config/database');
 
 const Order = sequelize.define('Order', {
   id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
   },
   order_number: {
     type: DataTypes.STRING(50),
@@ -13,7 +13,7 @@ const Order = sequelize.define('Order', {
     unique: true
   },
   user_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: 'users',
@@ -116,12 +116,12 @@ const Order = sequelize.define('Order', {
 
 const OrderItem = sequelize.define('OrderItem', {
   id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
   },
   order_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: 'orders',
@@ -129,7 +129,7 @@ const OrderItem = sequelize.define('OrderItem', {
     }
   },
   product_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: 'products',

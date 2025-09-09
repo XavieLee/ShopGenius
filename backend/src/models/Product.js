@@ -3,141 +3,106 @@ const { sequelize } = require('../config/database');
 
 const Product = sequelize.define('Product', {
   id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    comment: '商品ID'
   },
   name: {
     type: DataTypes.STRING(200),
     allowNull: false,
-    validate: {
-      notEmpty: true,
-      len: [1, 200]
-    }
+    comment: '商品名称'
   },
   description: {
     type: DataTypes.TEXT,
-    allowNull: true
-  },
-  short_description: {
-    type: DataTypes.STRING(500),
-    allowNull: true
-  },
-  price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    validate: {
-      min: 0
-    }
-  },
-  original_price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: true,
-    validate: {
-      min: 0
-    }
+    comment: '商品描述'
   },
   category: {
     type: DataTypes.STRING(100),
     allowNull: false,
-    validate: {
-      notEmpty: true
-    }
+    comment: '商品分类'
+  },
+  subcategory: {
+    type: DataTypes.STRING(100),
+    comment: '商品子分类'
   },
   brand: {
     type: DataTypes.STRING(100),
-    allowNull: true
+    comment: '品牌'
   },
-  sku: {
+  price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    comment: '价格'
+  },
+  original_price: {
+    type: DataTypes.DECIMAL(10, 2),
+    comment: '原价'
+  },
+  currency: {
+    type: DataTypes.STRING(3),
+    defaultValue: 'CNY',
+    comment: '货币单位'
+  },
+  color: {
+    type: DataTypes.STRING(50),
+    comment: '颜色'
+  },
+  size: {
+    type: DataTypes.STRING(50),
+    comment: '尺寸'
+  },
+  material: {
     type: DataTypes.STRING(100),
-    allowNull: false,
-    unique: true,
-    validate: {
-      notEmpty: true
-    }
-  },
-  stock: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-    validate: {
-      min: 0
-    }
-  },
-  status: {
-    type: DataTypes.ENUM('active', 'inactive', 'out_of_stock'),
-    defaultValue: 'active'
-  },
-  images: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    defaultValue: []
-  },
-  features: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    defaultValue: []
-  },
-  specifications: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    defaultValue: {}
-  },
-  tags: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    defaultValue: []
-  },
-  rating: {
-    type: DataTypes.DECIMAL(3, 2),
-    allowNull: true,
-    defaultValue: 0,
-    validate: {
-      min: 0,
-      max: 5
-    }
-  },
-  review_count: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-    validate: {
-      min: 0
-    }
-  },
-  sales_count: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-    validate: {
-      min: 0
-    }
+    comment: '材质'
   },
   weight: {
     type: DataTypes.DECIMAL(8, 2),
-    allowNull: true,
-    comment: '商品重量(kg)'
+    comment: '重量(kg)'
   },
   dimensions: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    comment: '商品尺寸 {length, width, height}'
+    type: DataTypes.STRING(100),
+    comment: '尺寸规格'
   },
-  meta_title: {
-    type: DataTypes.STRING(200),
-    allowNull: true
-  },
-  meta_description: {
+  image_url: {
     type: DataTypes.STRING(500),
-    allowNull: true
+    comment: '主图URL'
   },
-  is_featured: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
+  images: {
+    type: DataTypes.JSON,
+    comment: '商品图片列表'
   },
-  sort_order: {
+  tags: {
+    type: DataTypes.JSON,
+    comment: '商品标签'
+  },
+  rating: {
+    type: DataTypes.DECIMAL(3, 2),
+    defaultValue: 0.00,
+    comment: '评分'
+  },
+  review_count: {
     type: DataTypes.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
+    comment: '评价数量'
+  },
+  stock_quantity: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    comment: '库存数量'
+  },
+  status: {
+    type: DataTypes.ENUM('active', 'inactive', 'out_of_stock', 'discontinued'),
+    defaultValue: 'active',
+    comment: '商品状态'
+  },
+  seo_title: {
+    type: DataTypes.STRING(200),
+    comment: 'SEO标题'
+  },
+  seo_description: {
+    type: DataTypes.TEXT,
+    comment: 'SEO描述'
   }
 }, {
   tableName: 'products',

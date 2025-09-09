@@ -2,9 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config({ path: './config.env' });
+const http = require('http');
 
-// const { sequelize } = require('./config/database');
+// 加载环境配置（必须在其他模块之前）
+const envConfig = require('./config/env');
+
+const { sequelize } = require('./config/database');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
@@ -12,40 +15,32 @@ const orderRoutes = require('./routes/orders');
 const aiRoutes = require('./routes/ai');
 const userRoutes = require('./routes/users');
 const logRoutes = require('./routes/logs');
+const aiPersonaRoutes = require('./routes/aiPersona');
+const chatSessionRoutes = require('./routes/chatSession');
+const chatWebSocketService = require('./services/chatWebSocketService');
 
 const errorHandler = require('./middleware/errorHandler');
 const requestLogger = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // 安全中间件
 app.use(helmet());
 
-// CORS配置
+// CORS配置 - 移除跨域限制，允许所有origin
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
-    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:10086', 'http://127.0.0.1:10086'],
-  credentials: true
+  origin: true, // 允许所有origin
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// 请求频率限制
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15分钟
-  max: 100, // 最多100个请求
-  message: '请求过于频繁，请稍后再试'
-});
-app.use('/api/', limiter);
+// 请求频率限制 - 已移除，允许无限制请求
 
-// AI请求特殊限制
-const aiLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1分钟
-  max: 10, // 最多10个AI请求
-  message: 'AI请求过于频繁，请稍后再试'
-});
-app.use('/api/ai/', aiLimiter);
+// AI请求特殊限制 - 已移除，允许无限制请求
 
 // 解析JSON请求体
 app.use(express.json({ limit: '10mb' }));
@@ -70,6 +65,10 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/ai/persona', aiPersonaRoutes);
+app.use('/api/ai/chat/session', chatSessionRoutes);
+// 添加历史路由的别名
+app.use('/api/ai/chat', chatSessionRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/logs', logRoutes);
 
@@ -87,15 +86,26 @@ app.use(errorHandler);
 // 数据库连接和服务器启动
 async function startServer() {
   try {
-    // 暂时跳过数据库连接，先启动基础服务
-    logger.info('跳过数据库连接，使用模拟数据');
+    // 测试数据库连接
+    logger.info('正在连接数据库...');
+    await sequelize.authenticate();
+    logger.info('数据库连接成功');
+    
+    // 暂时跳过数据库模型同步，使用现有表结构
+    logger.info('跳过数据库模型同步，使用现有表结构');
+    
+    // 初始化WebSocket服务
+    chatWebSocketService.initialize(server);
+    
+    // 显示配置信息
+    envConfig.displayConfig();
     
     // 启动服务器
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       logger.info(`服务器运行在端口 ${PORT}`);
-      logger.info(`环境: ${process.env.NODE_ENV}`);
       logger.info(`健康检查: http://localhost:${PORT}/health`);
       logger.info(`API文档: http://localhost:${PORT}/api`);
+      logger.info(`WebSocket服务已启动`);
     });
     
   } catch (error) {
@@ -107,13 +117,13 @@ async function startServer() {
 // 优雅关闭
 process.on('SIGTERM', async () => {
   logger.info('接收到SIGTERM信号，正在关闭服务器...');
-  // await sequelize.close();
+  await sequelize.close();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   logger.info('接收到SIGINT信号，正在关闭服务器...');
-  // await sequelize.close();
+  await sequelize.close();
   process.exit(0);
 });
 

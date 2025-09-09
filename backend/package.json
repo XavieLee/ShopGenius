@@ -9,28 +9,35 @@
     "test": "jest",
     "build": "echo \"Build completed\""
   },
-  "keywords": ["ai", "shopping", "ecommerce", "nodejs"],
+  "keywords": [
+    "ai",
+    "shopping",
+    "ecommerce",
+    "nodejs"
+  ],
   "author": "ShopGenius Team",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "dotenv": "^16.3.1",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
-    "mysql2": "^3.6.5",
-    "sequelize": "^6.35.2",
     "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
-    "uuid": "^9.0.1"
+    "mysql2": "^3.6.5",
+    "sequelize": "^6.35.2",
+    "socket.io": "^4.8.1",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
     "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
     "supertest": "^6.3.3"
   }
 }

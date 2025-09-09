@@ -1,5 +1,6 @@
 // API服务配置
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const WS_BASE_URL = process.env.REACT_APP_WS_URL || 'http://localhost:3001';
 
 // 通用API请求函数
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -91,7 +92,123 @@ export const productAPI = {
 
 // AI相关API
 export const aiAPI = {
-  // AI聊天
+  // 获取AI风格列表
+  getPersonas: () =>
+    apiRequest<AIPersona[]>('/ai/persona/list'),
+
+  // 初始化用户AI风格
+  initPersona: (userId: string) =>
+    apiRequest<{
+      personaId: string;
+      persona: AIPersona;
+      greeting: string;
+    }>(`/ai/persona/init?userId=${userId}`),
+
+  // 切换AI风格
+  switchPersona: (userId: string, personaId: string) =>
+    apiRequest<{
+      personaId: string;
+      persona: AIPersona;
+      greeting: string;
+    }>('/ai/persona/switch', {
+      method: 'POST',
+      body: JSON.stringify({ userId, personaId }),
+    }),
+
+  // 创建聊天会话
+  createSession: (userId: string, personaId: string) =>
+    apiRequest<{
+      sessionId: string;
+      createdAt: string;
+    }>('/ai/chat/session/create', {
+      method: 'POST',
+      body: JSON.stringify({ userId, personaId }),
+    }),
+
+  // 获取聊天历史
+  getChatHistory: (userId: string, limit: number = 10) =>
+    apiRequest<{
+      sessions: ChatSession[];
+      messages: ChatMessage[];
+    }>(`/ai/chat/history?userId=${userId}&limit=${limit}`),
+
+  // 更新会话标题
+  updateSessionTitle: (sessionId: string, title: string) =>
+    apiRequest<{
+      sessionId: string;
+      title: string;
+    }>(`/ai/chat/session/${sessionId}/title`, {
+      method: 'PUT',
+      body: JSON.stringify({ title }),
+    }),
+
+  // 删除聊天会话
+  deleteSession: (sessionId: string) =>
+    apiRequest<null>(`/ai/chat/session/${sessionId}`, {
+      method: 'DELETE',
+    }),
+
+  // AI聊天（Socket.IO连接）
+  connectWebSocket: (userId: string, sessionId: string, personaId: string, onMessage: (message: any) => void) => {
+    // 动态导入Socket.IO客户端
+    const io = require('socket.io-client');
+    const socket = io(WS_BASE_URL, {
+      transports: ['websocket', 'polling']
+    });
+    
+    socket.on('connect', () => {
+      console.log('Socket.IO连接已建立', socket.id);
+      
+      // 加入聊天会话
+      socket.emit('join_chat', {
+        userId,
+        sessionId,
+        personaId
+      });
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('Socket.IO连接已断开');
+    });
+    
+    socket.on('connect_error', (error: any) => {
+      console.error('Socket.IO连接错误:', error);
+    });
+    
+    // 监听AI回复
+    socket.on('ai_response', (data: any) => {
+      onMessage({
+        type: 'message',
+        content: data.data.message,
+        products: data.data.products
+      });
+    });
+    
+    // 监听打字指示器
+    socket.on('typing_start', () => {
+      onMessage({ type: 'typing' });
+    });
+    
+    socket.on('typing_stop', () => {
+      onMessage({ type: 'typing_stop' });
+    });
+    
+    return socket;
+  },
+
+  // 发送聊天消息（通过Socket.IO）
+  sendMessage: (socket: any, message: string) => {
+    if (socket && socket.connected) {
+      socket.emit('user_message', {
+        content: message,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      console.error('Socket.IO连接未就绪');
+    }
+  },
+
+  // 旧版API（保持兼容性）
   chat: (message: string, context?: any, persona?: string) =>
     apiRequest<{
       reply: string;
@@ -226,20 +343,50 @@ export interface Product {
   name: string;
   category: string;
   color: string;
-  price: number;
-  originalPrice?: number;
+  price: number | string;
+  originalPrice?: number | string;
   description: string;
   image: string;
-  rating?: number;
-  reviews?: number;
-  stock?: number;
+  rating?: number | string;
+  reviews?: number | string;
+  stock?: number | string;
   features?: string[];
+}
+
+export interface AIPersona {
+  id: string;
+  label: string;
+  description: string;
+  systemPrompt: string;
+  greeting: string;
+  avatar?: string;
+  isActive: boolean;
+}
+
+export interface ChatSession {
+  sessionId: string;
+  title: string;
+  createdAt: string;
+  lastMessageAt?: string;
+  messageCount: number;
+  personaId: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  sessionId: string;
+  personaId?: string;
+  products?: Product[];
+  metadata?: any;
 }
 
 export interface CartItem {
   productId: string;
   name: string;
-  price: number;
+  price: number | string;
   image: string;
   quantity: number;
   addedAt?: string;
