@@ -250,7 +250,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-900">
-      <div className="relative w-full min-h-screen bg-white flex flex-col">
+      <div className="relative w-full h-screen bg-white flex flex-col">
         <header className="p-3 border-b flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
             <div className="font-semibold text-lg">ShopGenius</div>
@@ -294,14 +294,14 @@ export default function App() {
           </button>
         </header>
 
-        <main className="flex-1 overflow-auto px-4 py-4">
+        <main className="flex-1 overflow-auto px-4 pt-4 pb-0">
           {tab === "home" ? (
             <AttractiveHomePage 
               onStartChat={() => setTab("assistant")}
               onSwitchToShop={() => setTab("shop")}
             />
           ) : tab === "assistant" ? (
-            <section className="bg-white rounded-2xl border shadow-sm flex flex-col overflow-hidden" style={{ minHeight: "600px" }}>
+            <section className="bg-white rounded-2xl border shadow-sm flex flex-col overflow-hidden h-[calc(100vh-120px)]">
               <div className="p-4 border-b">
                 <div className="font-medium">AI Shopping Assistant</div>
                 <div className="mt-1 text-xs text-gray-500">AI Persona</div>
@@ -323,6 +323,15 @@ export default function App() {
               <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-4">
                 {messages.map((m, idx) => (
                   <div key={idx} className={cls("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+                    {m.role === "assistant" && !m.product && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden mr-3 flex-shrink-0 self-center">
+                        <img 
+                          src="/girl.gif" 
+                          alt="AI助手" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     {m.product ? (
                       <div className="max-w-[90%] rounded-2xl border overflow-hidden bg-white">
                         <div className="grid grid-cols-5 gap-0">
@@ -377,6 +386,13 @@ export default function App() {
                 ))}
                 {typing && (
                   <div className="flex justify-start">
+                    <div className="w-8 h-8 rounded-full overflow-hidden mr-3 flex-shrink-0 self-center">
+                      <img 
+                        src="/girl.gif" 
+                        alt="AI助手" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div className="bg-gray-100 rounded-2xl px-4 py-2 text-sm">Thinking…</div>
                   </div>
                 )}
@@ -741,25 +757,33 @@ function CheckIcon() {
 
 function ChatInput({ onSend }: { onSend: (t: string) => void }) {
   const [val, setVal] = useState("");
+  const [isComposing, setIsComposing] = useState(false);
+  
+  const handleSend = () => {
+    if (val.trim() && !isComposing) {
+      onSend(val);
+      setVal("");
+    }
+  };
+  
   return (
-    <div className="p-3 border-t bg-white flex items-center gap-2">
+    <div className="p-2 border-t bg-white flex items-center gap-2">
       <input 
         value={val} 
         onChange={(e) => setVal(e.target.value)} 
         onKeyDown={(e) => { 
-          if(e.key === "Enter") { 
-            onSend(val); 
-            setVal(""); 
+          if(e.key === "Enter" && !isComposing) { 
+            e.preventDefault();
+            handleSend();
           } 
-        }} 
+        }}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         placeholder="Type a message…" 
         className="flex-1 rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black/10"
       />
       <button 
-        onClick={() => { 
-          onSend(val); 
-          setVal(""); 
-        }} 
+        onClick={handleSend} 
         className="rounded-xl bg-black text-white px-4 py-2 text-sm"
       >
         Send
