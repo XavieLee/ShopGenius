@@ -12,6 +12,7 @@ interface ChatContainerProps {
   onSend: (text: string) => void;
   onAddToCart: (product: Product) => void;
   justAddedId: string | null;
+  onBack?: () => void;
 }
 
 export function ChatContainer({ 
@@ -21,7 +22,8 @@ export function ChatContainer({
   tab, 
   onSend, 
   onAddToCart, 
-  justAddedId 
+  justAddedId,
+  onBack
 }: ChatContainerProps) {
   const chatRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,11 +90,26 @@ export function ChatContainer({
   }, []);
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden bg-black">
+      {/* 返回按钮 */}
+      {onBack && (
+        <div className="px-4 py-3 border-b border-gray-800">
+          <button 
+            onClick={onBack}
+            className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>返回</span>
+          </button>
+        </div>
+      )}
+      
       {/* 消息区域 - 可滚动 */}
       <div 
         ref={chatRef} 
-        className="flex-1 overflow-auto p-4 space-y-4" 
+        className="flex-1 overflow-auto p-4 space-y-4 bg-black" 
         style={{ 
           scrollBehavior: 'smooth'
         }}
@@ -102,7 +119,7 @@ export function ChatContainer({
             {/* 日期分隔符 */}
             {shouldShowDateSeparator(idx) && (
               <div className="flex justify-center my-4">
-                <div className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">
+                <div className="bg-gray-800 text-gray-400 text-xs px-3 py-1 rounded-full">
                   {formatDateSeparator(m.timestamp)}
                 </div>
               </div>
@@ -120,8 +137,8 @@ export function ChatContainer({
         {/* 历史对话提示 - 只在初始加载历史消息时显示 */}
         {showHistoryHint && (
           <div className="text-center py-2">
-            <div className="inline-flex items-center px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
-              <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+            <div className="inline-flex items-center px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-400">
+              <span className="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
               以上是历史对话
             </div>
           </div>
@@ -136,7 +153,7 @@ export function ChatContainer({
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="bg-gray-100 rounded-2xl px-4 py-2 text-sm">Thinking…</div>
+            <div className="bg-gray-800 text-white rounded-2xl px-4 py-2 text-sm">Thinking…</div>
           </div>
         )}
       </div>

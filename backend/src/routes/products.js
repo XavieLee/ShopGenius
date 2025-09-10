@@ -31,14 +31,14 @@ router.get('/', async (req, res) => {
     if (minPrice) {
       whereClause.price = {
         ...whereClause.price,
-        [Op.gte]: parseFloat(minPrice)
+        [Op.gte]: parseFloat(minPrice) || 0
       };
     }
     
     if (maxPrice) {
       whereClause.price = {
         ...whereClause.price,
-        [Op.lte]: parseFloat(maxPrice)
+        [Op.lte]: parseFloat(maxPrice) || 0
       };
     }
     
@@ -67,11 +67,11 @@ router.get('/', async (req, res) => {
       name: product.name,
       category: product.category,
       color: product.color,
-      price: parseFloat(product.price),
-      originalPrice: product.original_price ? parseFloat(product.original_price) : undefined,
+      price: parseFloat(product.price) || 0,
+      originalPrice: product.original_price ? (parseFloat(product.original_price) || null) : undefined,
       description: product.description,
       image: product.image_url,
-      rating: product.rating ? parseFloat(product.rating) : 0,
+      rating: product.rating ? (parseFloat(product.rating) || 0) : 0,
       reviews: product.review_count || 0,
       stock: product.stock_quantity || 0,
       features: product.tags || []
@@ -101,6 +101,129 @@ router.get('/', async (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取商品列表失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取秒杀商品
+router.get('/flash-sale', async (req, res) => {
+  try {
+    logger.info('⚡ 获取秒杀商品请求');
+    
+    // 临时改为获取全部商品用于测试
+    const flashSaleProducts = await Product.findAll({
+      where: {
+        status: 'active'
+      },
+      order: [
+        ['created_at', 'DESC']
+      ],
+      limit: 10
+    });
+    
+    // 转换数据格式
+    const formattedProducts = flashSaleProducts.map(product => {
+      const price = parseFloat(product.price) || 0;
+      const originalPrice = product.original_price ? (parseFloat(product.original_price) || null) : null;
+      const discount = originalPrice && originalPrice > price ? 
+        Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+      
+      return {
+        id: product.id.toString(),
+        name: product.name || '未知商品',
+        category: product.category || '未分类',
+        color: product.color || '未知颜色',
+        price: price,
+        originalPrice: originalPrice,
+        discount: discount,
+        description: product.description || '',
+        image: product.image_url || '/girl.gif',
+        rating: product.rating ? (parseFloat(product.rating) || 0) : 0,
+        reviews: product.review_count || 0,
+        stock: product.stock_quantity || 0,
+        features: product.tags || []
+      };
+    });
+    
+    logger.info('✅ 秒杀商品查询完成', {
+      totalProducts: formattedProducts.length
+    });
+    
+    res.json({
+      success: true,
+      message: '获取秒杀商品成功',
+      data: {
+        products: formattedProducts,
+        total: formattedProducts.length
+      }
+    });
+    
+  } catch (error) {
+    logger.error('❌ 获取秒杀商品失败', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: '获取秒杀商品失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取本周推荐商品
+router.get('/weekly-recommendations', async (req, res) => {
+  try {
+    logger.info('⭐ 获取本周推荐商品请求');
+    
+    // 临时改为获取全部商品用于测试
+    const weeklyProducts = await Product.findAll({
+      where: {
+        status: 'active'
+      },
+      order: [
+        ['updated_at', 'DESC']
+      ],
+      limit: 10
+    });
+    
+    // 转换数据格式
+    const formattedProducts = weeklyProducts.map(product => {
+      const price = parseFloat(product.price) || 0;
+      const originalPrice = product.original_price ? (parseFloat(product.original_price) || null) : null;
+      
+      return {
+        id: product.id.toString(),
+        name: product.name || '未知商品',
+        category: product.category || '未分类',
+        color: product.color || '未知颜色',
+        price: price,
+        originalPrice: originalPrice,
+        description: product.description || '',
+        image: product.image_url || '/girl.gif',
+        rating: product.rating ? (parseFloat(product.rating) || 0) : 0,
+        reviews: product.review_count || 0,
+        stock: product.stock_quantity || 0,
+        features: product.tags || []
+      };
+    });
+    
+    logger.info('✅ 本周推荐商品查询完成', {
+      totalProducts: formattedProducts.length
+    });
+    
+    res.json({
+      success: true,
+      message: '获取本周推荐商品成功',
+      data: {
+        products: formattedProducts,
+        total: formattedProducts.length
+      }
+    });
+    
+  } catch (error) {
+    logger.error('❌ 获取本周推荐商品失败', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: '获取本周推荐商品失败',
       error: error.message
     });
   }
@@ -148,11 +271,11 @@ router.get('/:id', async (req, res) => {
       name: product.name,
       category: product.category,
       color: product.color,
-      price: parseFloat(product.price),
-      originalPrice: product.original_price ? parseFloat(product.original_price) : undefined,
+      price: parseFloat(product.price) || 0,
+      originalPrice: product.original_price ? (parseFloat(product.original_price) || null) : undefined,
       description: product.description,
       image: product.image_url,
-      rating: product.rating ? parseFloat(product.rating) : 0,
+      rating: product.rating ? (parseFloat(product.rating) || 0) : 0,
       reviews: product.review_count || 0,
       stock: product.stock_quantity || 0,
       features: product.tags || []
@@ -163,11 +286,11 @@ router.get('/:id', async (req, res) => {
       name: p.name,
       category: p.category,
       color: p.color,
-      price: parseFloat(p.price),
-      originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
+      price: parseFloat(p.price) || 0,
+      originalPrice: p.original_price ? (parseFloat(p.original_price) || null) : undefined,
       description: p.description,
       image: p.image_url,
-      rating: p.rating ? parseFloat(p.rating) : 0,
+      rating: p.rating ? (parseFloat(p.rating) || 0) : 0,
       reviews: p.review_count || 0,
       stock: p.stock_quantity || 0,
       features: p.tags || []
@@ -234,14 +357,14 @@ router.get('/search', async (req, res) => {
     if (minPrice) {
       whereClause.price = {
         ...whereClause.price,
-        [Op.gte]: parseFloat(minPrice)
+        [Op.gte]: parseFloat(minPrice) || 0
       };
     }
     
     if (maxPrice) {
       whereClause.price = {
         ...whereClause.price,
-        [Op.lte]: parseFloat(maxPrice)
+        [Op.lte]: parseFloat(maxPrice) || 0
       };
     }
     
@@ -256,11 +379,11 @@ router.get('/search', async (req, res) => {
       name: product.name,
       category: product.category,
       color: product.color,
-      price: parseFloat(product.price),
-      originalPrice: product.original_price ? parseFloat(product.original_price) : undefined,
+      price: parseFloat(product.price) || 0,
+      originalPrice: product.original_price ? (parseFloat(product.original_price) || null) : undefined,
       description: product.description,
       image: product.image_url,
-      rating: product.rating ? parseFloat(product.rating) : 0,
+      rating: product.rating ? (parseFloat(product.rating) || 0) : 0,
       reviews: product.review_count || 0,
       stock: product.stock_quantity || 0,
       features: product.tags || []

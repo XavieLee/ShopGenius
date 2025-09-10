@@ -113,14 +113,69 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-body {
+/* iPhone全面屏支持 */
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #000000;
 }
+
+/* 支持iPhone的safe-area */
+#root {
+  min-height: 100vh;
+  min-height: 100dvh; /* 动态视口高度 */
+  background-color: #000000;
+}
+
+/* 应用容器适配safe-area */
+.app-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #000000;
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* iPhone状态栏适配 */
+@supports (padding: max(0px)) {
+  .app-container {
+    padding-top: max(env(safe-area-inset-top), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+}
+
+/* 圆角支持 */
+@supports (border-radius: env(safe-area-inset-top)) {
+  .app-container {
+    border-radius: env(safe-area-inset-top) env(safe-area-inset-top) 0 0;
+  }
+}
+
+/* 滚动优化 */
+main {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* 确保内容不被遮挡 */
+.app-container > div {
+  position: relative;
+  z-index: 1;
+}
+
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

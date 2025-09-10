@@ -19,6 +19,7 @@ export function useAI() {
   const [showHistoryHint, setShowHistoryHint] = useState(false);
   const aiInitializedRef = useRef(false);
   const [hasNotifiedSearchInterest, setHasNotifiedSearchInterest] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'failed'>('disconnected');
 
   // 处理WebSocket消息
   const handleWebSocketMessage = useCallback((message: any) => {
@@ -67,7 +68,19 @@ export function useAI() {
       setCurrentSessionId(sessionResult.sessionId);
 
       // 建立WebSocket连接
-      const ws = aiAPI.connectWebSocket("1", sessionResult.sessionId, initResult.personaId, handleWebSocketMessage);
+      setConnectionStatus('connecting');
+      const ws = aiAPI.connectWebSocket("1", sessionResult.sessionId, initResult.personaId, (message: any) => {
+        // 更新连接状态
+        if (message.type === 'connected') {
+          setConnectionStatus('connected');
+        } else if (message.type === 'disconnected') {
+          setConnectionStatus('disconnected');
+        } else if (message.type === 'failed') {
+          setConnectionStatus('failed');
+        }
+        // 处理其他消息
+        handleWebSocketMessage(message);
+      });
       setWsConnection(ws);
 
       // 如果有历史消息，显示历史消息；否则显示欢迎消息
@@ -225,6 +238,7 @@ export function useAI() {
     messages,
     typing,
     showHistoryHint,
+    connectionStatus,
     aiInitializedRef,
     initializeAI,
     handlePersonaSwitch,

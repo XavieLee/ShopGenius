@@ -16,8 +16,8 @@ import { CartIcon } from "./components/ui";
  */
 
 export default function App() {
-  // 应用状态
-  const [tab, setTab] = useState<TabType>("home");
+  // 应用状态 - 默认显示导购页面
+  const [tab, setTab] = useState<TabType>("assistant");
   const [cartOpen, setCartOpen] = useState(false);
 
   // 自定义Hooks
@@ -57,60 +57,57 @@ export default function App() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-900">
-      <div className="relative w-full h-screen bg-white flex flex-col">
-        {/* 头部导航 */}
-        <header className="p-3 border-b flex items-center justify-between bg-white">
-          <div className="flex items-center gap-3">
-            <div className="font-semibold text-lg">ShopGenius</div>
-            <div className="ml-1 flex gap-1 rounded-full bg-gray-100 p-1">
-              <button 
-                onClick={() => setTab("home")} 
-                className={cls("px-3 py-1.5 text-sm rounded-full", 
-                  tab === "home" ? "bg-white shadow border" : "text-gray-600"
-                )}
-              >
-                首页
-              </button>
+    <div className="app-container min-h-screen bg-black text-white">
+      <div className="relative w-full h-screen bg-black flex flex-col">
+        {/* 头部导航 - 按照设计稿样式 */}
+        <header className="px-4 py-3 bg-black">
+          <div className="flex items-center justify-between">
+            {/* 导航标签 */}
+            <div className="flex gap-8">
               <button 
                 onClick={() => setTab("assistant")} 
-                className={cls("px-3 py-1.5 text-sm rounded-full", 
-                  tab === "assistant" ? "bg-white shadow border" : "text-gray-600"
+                className={cls("relative text-base font-medium transition-colors", 
+                  tab === "assistant" ? "text-white" : "text-gray-400"
                 )}
               >
                 导购
+                {tab === "assistant" && (
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white"></div>
+                )}
               </button>
               <button 
                 onClick={() => setTab("shop")} 
-                className={cls("px-3 py-1.5 text-sm rounded-full", 
-                  tab === "shop" ? "bg-white shadow border" : "text-gray-600"
+                className={cls("relative text-base font-medium transition-colors", 
+                  tab === "shop" ? "text-white" : "text-gray-400"
                 )}
               >
                 逛逛
+                {tab === "shop" && (
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white"></div>
+                )}
               </button>
             </div>
+            
+            {/* 购物车图标 */}
+            <button 
+              onClick={() => setCartOpen(true)} 
+              className="relative p-2 text-white hover:text-gray-300 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+              </svg>
+              {cart.cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-4 flex items-center justify-center font-medium text-[10px] px-1">
+                  {cart.cartCount}
+                </span>
+              )}
+            </button>
           </div>
-          <button 
-            onClick={() => setCartOpen(true)} 
-            className="relative rounded-full border px-3 py-1.5 text-sm bg-white flex items-center justify-center w-10 h-10"
-          >
-            <CartIcon />
-            {cart.cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center">
-                {cart.cartCount}
-              </span>
-            )}
-          </button>
         </header>
 
         {/* 主要内容区域 */}
-        <main className="flex-1 overflow-auto px-4 pt-4 pb-0">
-          {tab === "home" ? (
-            <AttractiveHomePage 
-              onStartChat={() => setTab("assistant")}
-              onSwitchToShop={() => setTab("shop")}
-            />
-          ) : tab === "assistant" ? (
+        <main className="flex-1 overflow-auto bg-black relative">
+          {tab === "assistant" ? (
             <AssistantPage
               persona={ai.currentPersona?.id || "friendly"}
               aiPersonas={ai.aiPersonas}
@@ -122,6 +119,7 @@ export default function App() {
               onSend={ai.handleSend}
               onAddToCart={cart.addToCart}
               justAddedId={cart.justAddedId}
+              cart={cart.cart}
             />
           ) : (
             <ShopPage

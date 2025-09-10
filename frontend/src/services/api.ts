@@ -1,6 +1,46 @@
-// API服务配置
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-const WS_BASE_URL = process.env.REACT_APP_WS_URL || 'http://localhost:3001';
+// API服务配置 - 自动检测环境
+const getApiBaseUrl = () => {
+  // 优先使用环境变量
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // 自动检测：如果当前访问的是localhost，使用localhost；否则使用当前域名
+  const currentHost = window.location.hostname;
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    return 'http://localhost:3001/api';
+  } else {
+    // 使用当前域名，假设后端在同一台服务器的3001端口
+    return `http://${currentHost}:3001/api`;
+  }
+};
+
+const getWsBaseUrl = () => {
+  // 优先使用环境变量
+  if (process.env.REACT_APP_WS_URL) {
+    return process.env.REACT_APP_WS_URL;
+  }
+  
+  // 自动检测：如果当前访问的是localhost，使用localhost；否则使用当前域名
+  const currentHost = window.location.hostname;
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    return 'http://localhost:3001';
+  } else {
+    // 使用当前域名，假设后端在同一台服务器的3001端口
+    return `http://${currentHost}:3001`;
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
+const WS_BASE_URL = getWsBaseUrl();
+
+// 调试信息
+console.log('🔧 API配置信息:');
+console.log('  - 当前域名:', window.location.hostname);
+console.log('  - API地址:', API_BASE_URL);
+console.log('  - WebSocket地址:', WS_BASE_URL);
+console.log('  - 环境变量 REACT_APP_API_URL:', process.env.REACT_APP_API_URL || '未设置');
+console.log('  - 环境变量 REACT_APP_WS_URL:', process.env.REACT_APP_WS_URL || '未设置');
 
 // 通用API请求函数
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -83,11 +123,25 @@ export const productAPI = {
   },
 
   // 获取分类列表
-  getCategories: () => 
+  getCategories: () =>
     apiRequest<{
       categories: string[];
       colors: string[];
     }>('/products/categories/list'),
+
+  // 获取秒杀商品
+  getFlashSaleProducts: () =>
+    apiRequest<{
+      products: Product[];
+      total: number;
+    }>('/products/flash-sale'),
+
+  // 获取本周推荐商品
+  getWeeklyRecommendations: () =>
+    apiRequest<{
+      products: Product[];
+      total: number;
+    }>('/products/weekly-recommendations'),
 };
 
 // AI相关API
@@ -153,11 +207,24 @@ export const aiAPI = {
     // 动态导入Socket.IO客户端
     const io = require('socket.io-client');
     const socket = io(WS_BASE_URL, {
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      // 连接配置 - 减少资源消耗
+      reconnection: true,           // 允许重连
+      reconnectionAttempts: 3,      // 最多重试3次
+      reconnectionDelay: 2000,      // 重连延迟2秒
+      reconnectionDelayMax: 10000,  // 最大重连延迟10秒
+      timeout: 10000,               // 连接超时10秒
+      forceNew: false,              // 复用现有连接
+      // 减少心跳频率
+      pingTimeout: 60000,           // ping超时60秒
+      pingInterval: 25000,          // ping间隔25秒
     });
     
     socket.on('connect', () => {
       console.log('Socket.IO连接已建立', socket.id);
+      
+      // 通知连接成功
+      onMessage({ type: 'connected' });
       
       // 加入聊天会话
       socket.emit('join_chat', {
@@ -167,12 +234,39 @@ export const aiAPI = {
       });
     });
     
-    socket.on('disconnect', () => {
-      console.log('Socket.IO连接已断开');
+    socket.on('disconnect', (reason: string) => {
+      console.log('Socket.IO连接已断开:', reason);
+      
+      // 通知连接断开
+      onMessage({ type: 'disconnected' });
+      
+      if (reason === 'io server disconnect') {
+        // 服务器主动断开，不自动重连
+        console.log('服务器主动断开连接，停止重连');
+        socket.disconnect();
+      }
     });
     
     socket.on('connect_error', (error: any) => {
-      console.error('Socket.IO连接错误:', error);
+      console.error('Socket.IO连接错误:', error.message);
+    });
+    
+    socket.on('reconnect', (attemptNumber: number) => {
+      console.log('Socket.IO重连成功，尝试次数:', attemptNumber);
+    });
+    
+    socket.on('reconnect_attempt', (attemptNumber: number) => {
+      console.log('Socket.IO重连尝试:', attemptNumber);
+    });
+    
+    socket.on('reconnect_error', (error: any) => {
+      console.error('Socket.IO重连失败:', error.message);
+    });
+    
+    socket.on('reconnect_failed', () => {
+      console.error('Socket.IO重连失败，已达到最大重试次数');
+      // 通知连接失败
+      onMessage({ type: 'failed' });
     });
     
     // 监听AI回复
