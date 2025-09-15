@@ -100,12 +100,13 @@ async function startServer() {
     // 显示配置信息
     envConfig.displayConfig();
     
-    // 启动服务器
-    server.listen(PORT, () => {
+    // 启动服务器 - 绑定到所有网络接口
+    server.listen(PORT, '0.0.0.0', () => {
       logger.info(`服务器运行在端口 ${PORT}`);
-      logger.info(`健康检查: http://localhost:${PORT}/health`);
-      logger.info(`API文档: http://localhost:${PORT}/api`);
+      logger.info(`健康检查: http://0.0.0.0:${PORT}/health`);
+      logger.info(`API文档: http://0.0.0.0:${PORT}/api`);
       logger.info(`WebSocket服务已启动`);
+      logger.info(`外部访问: http://YOUR_SERVER_IP:${PORT}`);
     });
     
   } catch (error) {
