@@ -16,11 +16,74 @@ export function makeClearedSlots(): Slots {
 // 解析自然语言筛选条件
 export function parseFilterPrompt(s: string): Slots { 
   const lower = s.toLowerCase(); 
-  const color = COLORS.find((c) => lower.includes(c.toLowerCase())) ?? null; 
-  const category = CATEGORIES.find((c) => lower.includes(c.toLowerCase())) ?? null; 
+  
+  // 颜色映射表（中文到英文）
+  const colorMap: Record<string, string> = {
+    '红色': 'Red',
+    '蓝色': 'Blue', 
+    '黑色': 'Black',
+    '白色': 'White',
+    '绿色': 'Green',
+    '棕色': 'Brown',
+    '红': 'Red',
+    '蓝': 'Blue',
+    '黑': 'Black', 
+    '白': 'White',
+    '绿': 'Green',
+    '棕': 'Brown'
+  };
+  
+  // 分类映射表（中文到英文）
+  const categoryMap: Record<string, string> = {
+    '美妆': 'Beauty',
+    '鞋子': 'Shoes',
+    '包包': 'Bags', 
+    '电子产品': 'Electronics',
+    '运动': 'Sports',
+    '配饰': 'Accessories',
+    '运动鞋': 'Shoes',
+    '连衣裙': 'Beauty',
+    '手机配件': 'Electronics',
+    '蓝牙耳机': 'Electronics',
+    '护肤品': 'Beauty'
+  };
+  
+  // 解析颜色 - 支持中英文
+  let color: string | null = null;
+  for (const [chinese, english] of Object.entries(colorMap)) {
+    if (lower.includes(chinese.toLowerCase())) {
+      color = english;
+      break;
+    }
+  }
+  if (!color) {
+    color = COLORS.find((c) => lower.includes(c.toLowerCase())) ?? null;
+  }
+  
+  // 解析分类 - 支持中英文
+  let category: string | null = null;
+  for (const [chinese, english] of Object.entries(categoryMap)) {
+    if (lower.includes(chinese.toLowerCase())) {
+      category = english;
+      break;
+    }
+  }
+  if (!category) {
+    category = CATEGORIES.find((c) => lower.includes(c.toLowerCase())) ?? null;
+  }
+  
+  // 解析价格 - 支持中文表达
   let priceMax: number | null = null; 
-  const m = lower.match(/(?:under|<=|≤)\s*(\d+)/) || lower.match(/(\d+)\s*(?:元|rmb|usd|\$)/); 
-  if (m) priceMax = Number(m[1]); 
+  
+  // 匹配 "5000块以下"、"5000元以下"、"5000以下" 等
+  const priceMatch = lower.match(/(\d+)\s*(?:块|元|rmb|usd|\$)?\s*(?:以下|以内|以下)/) || 
+                    lower.match(/(?:under|<=|≤)\s*(\d+)/) || 
+                    lower.match(/(\d+)\s*(?:元|rmb|usd|\$)/);
+  
+  if (priceMatch) {
+    priceMax = Number(priceMatch[1]); 
+  }
+  
   return { category, color, priceMax }; 
 }
 

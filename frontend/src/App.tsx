@@ -133,6 +133,7 @@ export default function App() {
               onSlotsPromptChange={products.setSlotsPrompt}
               onSmartSearch={products.handleSmartSearch}
               onClearFilters={products.clearAllFilters}
+              onClearSearchOnly={products.clearSearchOnly}
               onAddToCart={cart.addToCart}
             />
           )}

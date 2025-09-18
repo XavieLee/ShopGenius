@@ -67,6 +67,13 @@ export function useProducts() {
     setSlotsPrompt({ category: null, color: null, priceMax: null });
   }, []);
 
+  // 只清除搜索文本，保留筛选条件
+  const clearSearchOnly = useCallback(() => {
+    setFilterPrompt("");
+    // 重新加载产品，应用当前的筛选条件但不应用搜索
+    loadProducts();
+  }, [loadProducts]);
+
   // 当筛选条件变化时重新加载产品
   useEffect(() => {
     loadProducts();
@@ -97,6 +104,7 @@ export function useProducts() {
     loadProducts,
     handleSmartSearch,
     clearAllFilters,
+    clearSearchOnly,
     getSearchInterest,
     clearSearchInterest
   };

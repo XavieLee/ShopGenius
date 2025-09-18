@@ -38,13 +38,13 @@ export function CartDrawer({
             className="text-sm text-gray-600 underline" 
             onClick={onClearCart}
           >
-            Clear
+            清空
           </button>
         </div>
         <div className="max-h-60 overflow-auto divide-y">
           {cart.length === 0 ? (
             <div className="text-sm text-gray-500 py-6 text-center">
-              Your cart is empty.
+              购物车是空的.
             </div>
           ) : (
             cart.map((it) => (
@@ -89,9 +89,9 @@ export function CartDrawer({
           <div className="font-semibold">Total: {currency(cartTotal)}</div>
           <button 
             className="rounded-xl bg-black text-white px-4 py-2 text-sm" 
-            onClick={() => alert("Checkout flow TBD")}
+            onClick={() => alert("小助理稍后联系您下单哦~")}
           >
-            Checkout
+            结算
           </button>
         </div>
       </div>
