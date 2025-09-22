@@ -50,7 +50,7 @@ export function ChatMessage({ message, onAddToCart, justAddedId }: ChatMessagePr
                   {/* 商品图片 */}
                   <div className="flex-shrink-0">
                     <img 
-                      src={product.image} 
+                      src={product.image_url || product.image || "/girl.gif"} 
                       alt={product.name} 
                       className="w-24 h-24 rounded-lg object-cover" 
                     />

@@ -147,27 +147,33 @@ export const productAPI = {
 // AI相关API
 export const aiAPI = {
   // 获取AI风格列表
-  getPersonas: () =>
-    apiRequest<AIPersona[]>('/ai/persona/list'),
+  getPersonas: async () => {
+    const response = await apiRequest<{success: boolean, data: AIPersona[]}>('/ai/persona/list');
+    return response.data || [];
+  },
 
   // 初始化用户AI风格
-  initPersona: (userId: string) =>
-    apiRequest<{
+  initPersona: async (userId: string) => {
+    const response = await apiRequest<{success: boolean, data: {
       personaId: string;
       persona: AIPersona;
       greeting: string;
-    }>(`/ai/persona/init?userId=${userId}`),
+    }}>(`/ai/persona/init?userId=${userId}`);
+    return response.data;
+  },
 
   // 切换AI风格
-  switchPersona: (userId: string, personaId: string) =>
-    apiRequest<{
+  switchPersona: async (userId: string, personaId: string) => {
+    const response = await apiRequest<{success: boolean, data: {
       personaId: string;
       persona: AIPersona;
       greeting: string;
-    }>('/ai/persona/switch', {
+    }}>('/ai/persona/switch', {
       method: 'POST',
       body: JSON.stringify({ userId, personaId }),
-    }),
+    });
+    return response.data;
+  },
 
   // 创建聊天会话
   createSession: (userId: string, personaId: string) =>
@@ -180,11 +186,13 @@ export const aiAPI = {
     }),
 
   // 获取聊天历史
-  getChatHistory: (userId: string, limit: number = 10) =>
-    apiRequest<{
+  getChatHistory: async (userId: string, limit: number = 10) => {
+    const response = await apiRequest<{
       sessions: ChatSession[];
       messages: ChatMessage[];
-    }>(`/ai/chat/history?userId=${userId}&limit=${limit}`),
+    }>(`/ai/chat/history?userId=${userId}&limit=${limit}`);
+    return response;
+  },
 
   // 更新会话标题
   updateSessionTitle: (sessionId: string, title: string) =>
@@ -441,6 +449,7 @@ export interface Product {
   originalPrice?: number | string;
   description: string;
   image: string;
+  image_url?: string; // 数据库中的图片URL字段
   rating?: number | string;
   reviews?: number | string;
   stock?: number | string;
@@ -482,6 +491,7 @@ export interface CartItem {
   name: string;
   price: number | string;
   image: string;
+  image_url?: string; // 数据库中的图片URL字段
   quantity: number;
   addedAt?: string;
 }

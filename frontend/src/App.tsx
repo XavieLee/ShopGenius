@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import cls from "classnames";
 import { TabType } from "./types";
-import { useAI } from "./hooks/useAI";
+import { useSimpleAI } from "./hooks/useSimpleAI";
 import { useCart } from "./hooks/useCart";
 import { useProducts } from "./hooks/useProducts";
-import AttractiveHomePage from "./components/AttractiveHomePage";
 import { AssistantPage } from "./components/pages/AssistantPage";
 import { ShopPage } from "./components/pages/ShopPage";
 import { CartDrawer } from "./components/cart/CartDrawer";
-import { CartIcon } from "./components/ui";
 
 /**
  * ShopGenius App - AI购物助手
@@ -21,7 +19,7 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
 
   // 自定义Hooks
-  const ai = useAI();
+  const ai = useSimpleAI();
   const cart = useCart();
   const products = useProducts();
 
@@ -33,14 +31,12 @@ export default function App() {
     }
   }, []); // 移除ai依赖，避免重复初始化
 
-  // 单独的清理effect，用于组件卸载时关闭WebSocket连接
+  // 清理effect
   useEffect(() => {
     return () => {
-      if (ai.wsConnection) {
-        ai.wsConnection.disconnect();
-      }
+      // 清理资源
     };
-  }, [ai.wsConnection]); // 只依赖wsConnection
+  }, []);
 
   // 当切换到导购页面时，检查搜索兴趣
   useEffect(() => {
@@ -109,17 +105,17 @@ export default function App() {
         <main className="flex-1 overflow-auto bg-black relative">
           {tab === "assistant" ? (
             <AssistantPage
-              persona={ai.currentPersona?.id || "friendly"}
-              aiPersonas={ai.aiPersonas}
+              persona={ai.currentPersona?.id || "assistant"}
               messages={ai.messages}
               typing={ai.typing}
               showHistoryHint={ai.showHistoryHint}
               tab={tab}
-              onPersonaSwitch={ai.handlePersonaSwitch}
               onSend={ai.handleSend}
               onAddToCart={cart.addToCart}
               justAddedId={cart.justAddedId}
               cart={cart.cart}
+              isStreaming={ai.isStreaming}
+              streamingMessageId={ai.streamingMessageId}
             />
           ) : (
             <ShopPage

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import { ChatMsg, Product } from '../../types';
 import { formatDateSeparator } from '../../utils';
-import { ChatMessage } from './ChatMessage';
+import { EnhancedChatMessage } from './EnhancedChatMessage';
 import { ChatInput } from '../ui';
 
 interface ChatContainerProps {
@@ -13,6 +13,8 @@ interface ChatContainerProps {
   onAddToCart: (product: Product) => void;
   justAddedId: string | null;
   onBack?: () => void;
+  isStreaming?: boolean;
+  streamingMessageId?: string | null;
 }
 
 export function ChatContainer({ 
@@ -23,7 +25,9 @@ export function ChatContainer({
   onSend, 
   onAddToCart, 
   justAddedId,
-  onBack
+  onBack,
+  isStreaming = false,
+  streamingMessageId
 }: ChatContainerProps) {
   const chatRef = useRef<HTMLDivElement | null>(null);
 
@@ -126,10 +130,12 @@ export function ChatContainer({
             )}
             
             {/* 消息内容 */}
-            <ChatMessage 
+            <EnhancedChatMessage 
               message={m} 
               onAddToCart={onAddToCart}
               justAddedId={justAddedId}
+              isStreaming={isStreaming}
+              streamingMessageId={streamingMessageId}
             />
           </div>
         ))}
@@ -153,7 +159,16 @@ export function ChatContainer({
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="bg-gray-800 text-white rounded-2xl px-4 py-2 text-sm">Thinking…</div>
+            <div className="bg-gray-800 text-white rounded-2xl px-4 py-3 text-sm shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+                <span>AI正在思考中...</span>
+              </div>
+            </div>
           </div>
         )}
       </div>

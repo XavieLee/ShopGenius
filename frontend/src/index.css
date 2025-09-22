@@ -2,6 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 导入代码高亮样式 */
+@import 'highlight.js/styles/github-dark.css';
+
+/* 自定义代码高亮样式，适配深色主题 */
+.hljs {
+  background: #1a1a1a !important;
+  color: #e6e6e6 !important;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955 !important;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+  color: #f44747 !important;
+}
+
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+  color: #b5cea8 !important;
+}
+
+.hljs-attribute {
+  color: #ce9178 !important;
+}
+
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: #ce9178 !important;
+}
+
+.hljs-title,
+.hljs-section {
+  color: #dcdcaa !important;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #569cd6 !important;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
 /* 自定义动画 */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }

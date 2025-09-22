@@ -255,7 +255,7 @@ export function ChatInput({ onSend }: { onSend: (t: string) => void }) {
   };
   
   return (
-    <div className="p-4 bg-black flex items-center gap-3">
+    <div className="p-4 bg-black flex items-center gap-3 border-t border-gray-800">
       <div className="flex-1 relative">
         <input 
           value={val} 
@@ -269,11 +269,12 @@ export function ChatInput({ onSend }: { onSend: (t: string) => void }) {
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
           placeholder="和导购说:想要本周推荐里更基础百搭" 
-          className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-white/20 placeholder-gray-400"
+          className="w-full bg-gray-800 text-white rounded-2xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-gray-400 text-sm leading-relaxed"
         />
         <button 
           onClick={handleSend} 
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+          disabled={!val.trim()}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>

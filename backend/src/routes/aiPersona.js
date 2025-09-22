@@ -97,31 +97,40 @@ router.post('/switch', async (req, res) => {
 
 /**
  * GET /api/ai/persona/list
- * 获取所有可用的AI导购风格
+ * 获取AI助手信息（简化版，只返回一种风格）
  */
 router.get('/list', async (req, res) => {
   try {
-    logger.info('获取AI导购风格列表请求');
+    logger.info('获取AI助手信息请求');
     
     const { AIPersona } = require('../models');
-    const personas = await AIPersona.findAll({
-      where: { is_active: true },
-      attributes: ['id', 'label', 'description'],
-      order: [['created_at', 'ASC']]
+    const persona = await AIPersona.findOne({
+      where: { id: 'friendly', is_active: true },
+      attributes: ['id', 'label', 'description']
     });
+    
+    if (!persona) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'AI_ASSISTANT_NOT_FOUND',
+          message: 'AI助手不存在'
+        }
+      });
+    }
     
     res.json({
       success: true,
-      data: personas
+      data: [persona]
     });
 
   } catch (error) {
-    logger.error('获取AI导购风格列表失败', { error: error.message });
+    logger.error('获取AI助手信息失败', { error: error.message });
     res.status(500).json({
       success: false,
       error: {
-        code: 'GET_PERSONA_LIST_FAILED',
-        message: '获取AI导购风格列表失败',
+        code: 'GET_AI_ASSISTANT_FAILED',
+        message: '获取AI助手信息失败',
         details: error.message
       }
     });

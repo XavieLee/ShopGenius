@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Product, Slots, CATEGORIES, COLORS } from '../../types';
 import { parseFilterPrompt } from '../../utils';
-import { SlotChips, QuickSelect, IconButton } from '../ui';
+import { SlotChips, QuickSelect } from '../ui';
 
 interface ShopPageProps {
   products: Product[];

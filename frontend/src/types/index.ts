@@ -26,6 +26,7 @@ export type ChatMsg = {
   product?: Product;
   products?: Product[]; // 支持多个商品
   timestamp?: string;
+  id?: string; // 消息唯一标识，用于流式更新
 };
 
 // 应用标签页类型

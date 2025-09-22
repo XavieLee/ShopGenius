@@ -1,35 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { AIPersona, ChatMsg, Product, TabType, CartItem } from '../../types';
-import { PersonaSwitcher } from '../ui';
 import { ChatContainer } from '../chat/ChatContainer';
 import { productAPI } from '../../services/api';
 
 interface AssistantPageProps {
   persona: string;
-  aiPersonas: AIPersona[];
   messages: ChatMsg[];
   typing: boolean;
   showHistoryHint: boolean;
   tab: TabType;
-  onPersonaSwitch: (personaId: string) => void;
   onSend: (text: string) => void;
   onAddToCart: (product: Product) => void;
   justAddedId: string | null;
   cart: CartItem[];
+  isStreaming?: boolean;
+  streamingMessageId?: string | null;
 }
 
 export function AssistantPage({
   persona,
-  aiPersonas,
   messages,
   typing,
   showHistoryHint,
   tab,
-  onPersonaSwitch,
   onSend,
   onAddToCart,
   justAddedId,
-  cart
+  cart,
+  isStreaming = false,
+  streamingMessageId
 }: AssistantPageProps) {
   const [showChat, setShowChat] = useState(false);
   const [activeTab, setActiveTab] = useState<'flash-sale' | 'weekly'>('flash-sale');
@@ -78,6 +77,8 @@ export function AssistantPage({
           onAddToCart={onAddToCart}
           justAddedId={justAddedId}
           onBack={() => setShowChat(false)}
+          isStreaming={isStreaming}
+          streamingMessageId={streamingMessageId}
         />
       </section>
     );

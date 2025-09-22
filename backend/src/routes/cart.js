@@ -78,7 +78,7 @@ router.post('/add', async (req, res) => {
     }
 
     // 检查商品是否已在购物车中
-    const existingItem = cartStorage[userId].find(item => item.productId === productId);
+    const existingItem = cartStorage[userId].find(item => item.productId == productId);
     
     if (existingItem) {
       // 更新数量
@@ -137,7 +137,7 @@ router.put('/:productId', (req, res) => {
     });
   }
 
-  const item = cartStorage[userId].find(item => item.productId === productId);
+  const item = cartStorage[userId].find(item => item.productId == productId);
   if (!item) {
     return res.status(404).json({
       success: false,
@@ -180,7 +180,7 @@ router.delete('/:productId', (req, res) => {
   }
 
   const initialLength = cartStorage[userId].length;
-  cartStorage[userId] = cartStorage[userId].filter(item => item.productId !== productId);
+  cartStorage[userId] = cartStorage[userId].filter(item => item.productId != productId);
   
   if (cartStorage[userId].length === initialLength) {
     return res.status(404).json({

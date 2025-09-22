@@ -4,19 +4,11 @@
 
 USE shopgenius;
 
--- 插入AI导购风格数据（如果不存在则插入）
+-- 插入AI导购风格数据（只保留一种风格）
 INSERT IGNORE INTO ai_personas (id, label, description, system_prompt, greeting_template) VALUES
-('friendly', '亲和', '温暖友好的购物助手', 
- '你是一个温暖友好的AI购物助手，总是以亲切、热情的语气与用户交流。你善于倾听用户需求，提供贴心的购物建议，让用户感受到被关心和重视。',
- '你好！我是你的专属购物顾问，很高兴为你服务！有什么我可以帮助你的吗？'),
-
-('rational', '理性', '理性分析的购物顾问', 
- '你是一个理性、专业的AI购物顾问，擅长分析商品性价比，提供客观、数据驱动的购物建议。你注重实用性和价值，帮助用户做出明智的购买决策。',
- '已切换到理性模式。让我为你分析最优质的商品选择。'),
-
-('luxury', '奢华', '高端奢华的购物顾问', 
- '你是一个高端奢华的AI购物顾问，专注于推荐高品质、高端的商品。你了解奢侈品市场，能够为用户提供尊贵的购物体验和专业的奢华商品建议。',
- '欢迎来到奢华购物体验！让我为你推荐最精致的高端商品。');
+('assistant', '智能购物助手', '专业的AI购物助手', 
+ '你是ShopGenius的智能购物助手，请用中文回答用户关于商品的问题。你善于倾听用户需求，提供贴心的购物建议，帮助用户找到心仪的商品。',
+ '你好！我是你的智能购物助手，有什么可以帮助你的吗？');
 
 -- 插入示例商品数据（如果不存在则插入）
 INSERT IGNORE INTO products (name, description, category, subcategory, brand, price, original_price, currency, color, size, material, weight, dimensions, image_url, images, tags, rating, review_count, stock_quantity, status, seo_title, seo_description) VALUES
@@ -41,22 +33,22 @@ INSERT IGNORE INTO users (username, email, password_hash, avatar_url, phone, sta
 ('testuser', 'test@example.com', '$2a$10$example_hash', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face', '13800138000', 'active'),
 ('demo_user', 'demo@example.com', '$2a$10$example_hash', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', '13800138001', 'active');
 
--- 插入用户AI风格偏好（如果不存在则插入）
+-- 插入用户AI风格偏好（统一使用assistant风格）
 INSERT IGNORE INTO user_persona_preferences (user_id, persona_id, is_default) VALUES
-(1, 'friendly', true),
-(2, 'rational', true);
+(1, 'assistant', true),
+(2, 'assistant', true);
 
--- 插入示例聊天会话（如果不存在则插入）
+-- 插入示例聊天会话（统一使用assistant风格）
 INSERT IGNORE INTO chat_sessions (user_id, persona_id) VALUES
-(1, 'friendly'),
-(2, 'rational');
+(1, 'assistant'),
+(2, 'assistant');
 
--- 插入示例聊天消息（如果不存在则插入）
+-- 插入示例聊天消息（统一使用assistant风格）
 INSERT IGNORE INTO chat_messages (session_id, role, content, persona_id) VALUES
 (1, 'user', '我想买一双红色的运动鞋', null),
-(1, 'assistant', '我为你推荐几款红色运动鞋，都是性价比很高的选择！', 'friendly'),
+(1, 'assistant', '我为你推荐几款红色运动鞋，都是性价比很高的选择！', 'assistant'),
 (2, 'user', '帮我分析一下iPhone和Samsung手机的性价比', null),
-(2, 'assistant', '基于你的需求，我分析了以下手机的性价比：', 'rational');
+(2, 'assistant', '基于你的需求，我分析了以下手机的性价比：', 'assistant');
 
 -- 插入消息商品关联（如果不存在则插入）
 INSERT IGNORE INTO message_products (message_id, product_id, display_order) VALUES

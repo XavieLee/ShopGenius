@@ -32,21 +32,20 @@ class AIService {
         }]
       });
 
-      // 如果没有默认偏好，使用第一个可用的AI风格
+      // 如果没有默认偏好，使用friendly风格
       if (!userPreference) {
         const defaultPersona = await AIPersona.findOne({
-          where: { is_active: true },
-          order: [['created_at', 'ASC']]
+          where: { id: 'friendly', is_active: true }
         });
 
         if (!defaultPersona) {
-          throw new Error('没有可用的AI导购风格');
+          throw new Error('AI助手风格不存在');
         }
 
         // 创建默认偏好
         userPreference = await UserPersonaPreference.create({
           user_id: userIdInt,
-          persona_id: defaultPersona.id,
+          persona_id: 'friendly',
           is_default: true
         });
 
@@ -58,7 +57,10 @@ class AIService {
         persona: {
           id: userPreference.persona.id,
           label: userPreference.persona.label,
-          description: userPreference.persona.description
+          description: userPreference.persona.description,
+          systemPrompt: userPreference.persona.system_prompt,
+          greeting: userPreference.persona.greeting_template,
+          isActive: userPreference.persona.is_active
         },
         greeting: userPreference.persona.greeting_template
       };
@@ -243,6 +245,7 @@ class AIService {
               id: mp.product.id,
               name: mp.product.name,
               image: mp.product.image_url,
+              image_url: mp.product.image_url,
               price: mp.product.price
             })) || []
           })),
@@ -306,6 +309,7 @@ class AIService {
             id: mp.product.id,
             name: mp.product.name,
             image: mp.product.image_url,
+            image_url: mp.product.image_url,
             price: mp.product.price
           })) || []
         })),
