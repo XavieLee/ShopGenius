@@ -4,11 +4,11 @@
 
 USE shopgenius;
 
--- 插入AI导购风格数据（只保留一种风格）
+-- 插入AI导购风格数据（使用friendly风格作为默认）
 INSERT IGNORE INTO ai_personas (id, label, description, system_prompt, greeting_template) VALUES
-('assistant', '智能购物助手', '专业的AI购物助手', 
- '你是ShopGenius的智能购物助手，请用中文回答用户关于商品的问题。你善于倾听用户需求，提供贴心的购物建议，帮助用户找到心仪的商品。',
- '你好！我是你的智能购物助手，有什么可以帮助你的吗？');
+('friendly', '友好购物助手', '友好的AI购物助手', 
+ '你是ShopGenius的友好购物助手，请用中文回答用户关于商品的问题。你善于倾听用户需求，提供贴心的购物建议，帮助用户找到心仪的商品。',
+ '你好！我是你的友好购物助手，有什么可以帮助你的吗？');
 
 -- 插入示例商品数据（如果不存在则插入）
 INSERT IGNORE INTO products (name, description, category, subcategory, brand, price, original_price, currency, color, size, material, weight, dimensions, image_url, images, tags, rating, review_count, stock_quantity, status, seo_title, seo_description) VALUES
@@ -33,22 +33,22 @@ INSERT IGNORE INTO users (username, email, password_hash, avatar_url, phone, sta
 ('testuser', 'test@example.com', '$2a$10$example_hash', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face', '13800138000', 'active'),
 ('demo_user', 'demo@example.com', '$2a$10$example_hash', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', '13800138001', 'active');
 
--- 插入用户AI风格偏好（统一使用assistant风格）
+-- 插入用户AI风格偏好（统一使用friendly风格）
 INSERT IGNORE INTO user_persona_preferences (user_id, persona_id, is_default) VALUES
-(1, 'assistant', true),
-(2, 'assistant', true);
+(1, 'friendly', true),
+(2, 'friendly', true);
 
--- 插入示例聊天会话（统一使用assistant风格）
+-- 插入示例聊天会话（统一使用friendly风格）
 INSERT IGNORE INTO chat_sessions (user_id, persona_id) VALUES
-(1, 'assistant'),
-(2, 'assistant');
+(1, 'friendly'),
+(2, 'friendly');
 
--- 插入示例聊天消息（统一使用assistant风格）
+-- 插入示例聊天消息（统一使用friendly风格）
 INSERT IGNORE INTO chat_messages (session_id, role, content, persona_id) VALUES
 (1, 'user', '我想买一双红色的运动鞋', null),
-(1, 'assistant', '我为你推荐几款红色运动鞋，都是性价比很高的选择！', 'assistant'),
+(1, 'assistant', '我为你推荐几款红色运动鞋，都是性价比很高的选择！', 'friendly'),
 (2, 'user', '帮我分析一下iPhone和Samsung手机的性价比', null),
-(2, 'assistant', '基于你的需求，我分析了以下手机的性价比：', 'assistant');
+(2, 'assistant', '基于你的需求，我分析了以下手机的性价比：', 'friendly');
 
 -- 插入消息商品关联（如果不存在则插入）
 INSERT IGNORE INTO message_products (message_id, product_id, display_order) VALUES
