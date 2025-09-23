@@ -5,7 +5,7 @@ import { useSimpleAI } from "./hooks/useSimpleAI";
 import { useCart } from "./hooks/useCart";
 import { useProducts } from "./hooks/useProducts";
 import { AssistantPage } from "./components/pages/AssistantPage";
-import { ShopPage } from "./components/pages/ShopPage";
+import { EnhancedShopPage } from "./components/pages/EnhancedShopPage";
 import { CartDrawer } from "./components/cart/CartDrawer";
 
 /**
@@ -17,6 +17,9 @@ export default function App() {
   // 应用状态 - 默认显示导购页面
   const [tab, setTab] = useState<TabType>("assistant");
   const [cartOpen, setCartOpen] = useState(false);
+  
+  // 搜索框状态 - 提升到App级别以保持状态
+  const [searchQuery, setSearchQuery] = useState('');
 
   // 自定义Hooks
   const ai = useSimpleAI();
@@ -31,18 +34,10 @@ export default function App() {
     }
   }, []); // 移除ai依赖，避免重复初始化
 
-  // 清理effect
-  useEffect(() => {
-    return () => {
-      // 清理资源
-    };
-  }, []);
 
   // 当切换到导购页面时，检查搜索兴趣
   useEffect(() => {
     if (tab === "assistant") {
-      // 重置通知状态
-      ai.resetSearchInterestNotification();
       // 延迟一点时间再检查，确保AI初始化完成
       setTimeout(() => {
         ai.checkAndNotifySearchInterest();
@@ -118,19 +113,41 @@ export default function App() {
               streamingMessageId={ai.streamingMessageId}
             />
           ) : (
-            <ShopPage
+            <EnhancedShopPage
               products={products.products}
               productsLoading={products.productsLoading}
-              filterPrompt={products.filterPrompt}
-              slotsPrompt={products.slotsPrompt}
-              loading={products.loading}
-              justAddedId={cart.justAddedId}
-              onFilterPromptChange={products.setFilterPrompt}
-              onSlotsPromptChange={products.setSlotsPrompt}
-              onSmartSearch={products.handleSmartSearch}
-              onClearFilters={products.clearAllFilters}
-              onClearSearchOnly={products.clearSearchOnly}
               onAddToCart={cart.addToCart}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              onAISearch={async (query: string) => {
+                products.setFilterPrompt(query);
+                await products.handleSmartSearch(query);
+              }}
+              onAIFilter={async (filters: any[]) => {
+                // 设置筛选条件
+                products.handleFilterChange(filters);
+                
+                // 从筛选条件中提取搜索关键字
+                let searchKeywords = '';
+                filters.forEach(filter => {
+                  if (filter.type === 'brand' || filter.type === 'rating') {
+                    // 品牌和评分条件作为搜索关键字
+                    if (searchKeywords) {
+                      searchKeywords += ` ${filter.label}`;
+                    } else {
+                      searchKeywords = filter.label;
+                    }
+                  }
+                });
+                
+                // 如果有搜索关键字，设置到filterPrompt中
+                if (searchKeywords) {
+                  products.setFilterPrompt(searchKeywords);
+                }
+                
+                // 立即执行搜索以应用筛选条件，直接传递筛选条件
+                await products.handleSmartSearch(searchKeywords || products.filterPrompt, filters);
+              }}
             />
           )}
         </main>

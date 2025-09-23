@@ -2,13 +2,13 @@ import { Product, AIPersona, CartItem, ChatMessage, ChatSession, Order } from '.
 
 // 重新导出API类型
 export type { 
-  Product, 
-  AIPersona, 
-  CartItem, 
-  ChatMessage, 
-  ChatSession, 
-  Order 
-} from '../services/api';
+  Product,
+  AIPersona,
+  CartItem,
+  ChatMessage,
+  ChatSession,
+  Order
+};
 
 // 筛选条件类型
 export type Slots = { 

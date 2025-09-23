@@ -18,6 +18,7 @@ const logRoutes = require('./routes/logs');
 const aiPersonaRoutes = require('./routes/aiPersona');
 const chatSessionRoutes = require('./routes/chatSession');
 const douyinLLMRoutes = require('./routes/douyinLLM');
+const aiSearchRoutes = require('./routes/aiSearch');
 const chatWebSocketService = require('./services/chatWebSocketService');
 
 const errorHandler = require('./middleware/errorHandler');
@@ -72,6 +73,8 @@ app.use('/api/ai/chat/session', chatSessionRoutes);
 app.use('/api/ai/chat', chatSessionRoutes);
 // 字节跳动大模型路由
 app.use('/api/douyin-llm', douyinLLMRoutes);
+// AI搜索路由
+app.use('/api/products', aiSearchRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/logs', logRoutes);
 

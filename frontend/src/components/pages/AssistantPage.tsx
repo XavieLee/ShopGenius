@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AIPersona, ChatMsg, Product, TabType, CartItem } from '../../types';
+import { ChatMsg, Product, TabType, CartItem } from '../../types';
 import { ChatContainer } from '../chat/ChatContainer';
 import { productAPI } from '../../services/api';
 

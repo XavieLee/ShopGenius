@@ -1,15 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
-import { productAPI, aiAPI, Product } from '../services/api';
+import { productAPI, Product } from '../services/api';
 import { Slots } from '../types';
 import { parseFilterPrompt } from '../utils';
 
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]); // 保存完整的商品列表
   const [productsLoading, setProductsLoading] = useState(false);
   const [filterPrompt, setFilterPrompt] = useState("");
   const [slotsPrompt, setSlotsPrompt] = useState<Slots>({ category: null, color: null, priceMax: null });
+  const [activeFilters, setActiveFilters] = useState<any[]>([]); // 添加筛选条件状态
   const [loading, setLoading] = useState(false);
   const [lastSearchInterest, setLastSearchInterest] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const parsedFromPrompt = parseFilterPrompt(filterPrompt);
   const mergedSlots: Slots = {
@@ -29,6 +32,8 @@ export function useProducts() {
         limit: 20
       });
       setProducts(response.products);
+      setAllProducts(response.products); // 同时保存完整列表
+      setIsInitialized(true);
     } catch (error) {
       console.error('加载产品失败:', error);
     } finally {
@@ -36,48 +41,93 @@ export function useProducts() {
     }
   }, [mergedSlots.category, mergedSlots.color, mergedSlots.priceMax]);
 
-  // 智能搜索
-  const handleSmartSearch = useCallback(async () => {
-    if (!filterPrompt.trim()) return;
+  // 智能搜索 - 用户输入什么就搜索什么，同时带上筛选条件
+  const handleSmartSearch = useCallback(async (searchQuery?: string, filters?: any[]) => {
+    const query = searchQuery || filterPrompt;
+    const currentFilters = filters || activeFilters;
+    
+    if (!query.trim() && currentFilters.length === 0) {
+      // 如果搜索为空且没有筛选条件，显示全部商品
+      setProducts(allProducts);
+      return;
+    }
     
     try {
       setLoading(true);
-      const response = await aiAPI.search(filterPrompt);
       
-      // 更新产品列表
+      // 构建搜索参数，包含搜索词和筛选条件
+      const searchParams: any = {
+        limit: 100
+      };
+      
+      // 添加搜索词
+      if (query.trim()) {
+        searchParams.search = query.trim();
+      }
+      
+      // 添加筛选条件
+      currentFilters.forEach(filter => {
+        if (filter.type === 'category') {
+          searchParams.category = filter.value;
+        } else if (filter.type === 'color') {
+          searchParams.color = filter.value;
+        } else if (filter.type === 'price') {
+          // 价格筛选条件，默认为最大值
+          searchParams.maxPrice = filter.value;
+        }
+        // 注意：brand和rating条件已经在App.tsx中处理为搜索关键字，这里不再重复处理
+      });
+      
+      
+      // 调用后端搜索API
+      const response = await productAPI.getProducts(searchParams);
+      
+      // 更新产品列表为搜索结果
       setProducts(response.products);
       
       // 记录搜索兴趣，用于AI助手感知
-      setLastSearchInterest(filterPrompt.trim());
-      
-      // 将搜索兴趣存储到localStorage，供AI助手使用
-      localStorage.setItem('lastSearchInterest', filterPrompt.trim());
-      localStorage.setItem('lastSearchTime', new Date().toISOString());
+      if (query.trim()) {
+        setLastSearchInterest(query.trim());
+        localStorage.setItem('lastSearchInterest', query.trim());
+        localStorage.setItem('lastSearchTime', new Date().toISOString());
+        // 清除已通知记录，允许新的搜索词被通知
+        localStorage.removeItem('lastNotifiedSearch');
+      }
       
     } catch (error) {
       console.error('智能搜索失败:', error);
     } finally {
       setLoading(false);
     }
-  }, [filterPrompt]);
+  }, [filterPrompt, allProducts, activeFilters]);
 
   // 清空所有筛选器
-  const clearAllFilters = useCallback(() => {
+  const clearAllFilters = useCallback(async () => {
     setFilterPrompt("");
     setSlotsPrompt({ category: null, color: null, priceMax: null });
-  }, []);
+    setActiveFilters([]); // 清空筛选条件
+    // 显示全部商品
+    setProducts(allProducts);
+  }, [allProducts]);
 
   // 只清除搜索文本，保留筛选条件
-  const clearSearchOnly = useCallback(() => {
+  const clearSearchOnly = useCallback(async () => {
     setFilterPrompt("");
-    // 重新加载产品，应用当前的筛选条件但不应用搜索
-    loadProducts();
-  }, [loadProducts]);
+    // 显示全部商品
+    setProducts(allProducts);
+  }, [allProducts]);
 
-  // 当筛选条件变化时重新加载产品
+  // 处理筛选条件变化
+  const handleFilterChange = useCallback((filters: any[]) => {
+    setActiveFilters(filters);
+  }, []);
+
+  // 初始化时加载产品
   useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+    if (!isInitialized) {
+      loadProducts();
+    }
+  }, [isInitialized, loadProducts]);
 
   // 获取搜索兴趣
   const getSearchInterest = useCallback(() => {
@@ -96,6 +146,7 @@ export function useProducts() {
     productsLoading,
     filterPrompt,
     slotsPrompt,
+    activeFilters,
     loading,
     mergedSlots,
     lastSearchInterest,
@@ -103,6 +154,7 @@ export function useProducts() {
     setSlotsPrompt,
     loadProducts,
     handleSmartSearch,
+    handleFilterChange,
     clearAllFilters,
     clearSearchOnly,
     getSearchInterest,

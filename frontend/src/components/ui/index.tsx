@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import cls from 'classnames';
-import { AIPersona, PERSONAS } from '../../types';
+import { PERSONAS, AIPersona } from '../../types';
 import { Slots } from '../../types';
 
 // AI风格切换器
@@ -173,7 +173,6 @@ export function QuickSelect({ label, value, options, onChange }: {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Option clicked:', opt.label, opt.value);
                 onChange(opt.value);
                 setIsOpen(false);
               }}
@@ -284,3 +283,7 @@ export function ChatInput({ onSend }: { onSend: (t: string) => void }) {
     </div>
   );
 }
+
+// 导出新的AI组件
+export { AISearchBox } from './AISearchBox';
+export { AIFilterPanel } from './AIFilterPanel';

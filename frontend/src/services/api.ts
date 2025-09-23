@@ -34,13 +34,6 @@ const getWsBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 const WS_BASE_URL = getWsBaseUrl();
 
-// 调试信息
-console.log('🔧 API配置信息:');
-console.log('  - 当前域名:', window.location.hostname);
-console.log('  - API地址:', API_BASE_URL);
-console.log('  - WebSocket地址:', WS_BASE_URL);
-console.log('  - 环境变量 REACT_APP_API_URL:', process.env.REACT_APP_API_URL || '未设置');
-console.log('  - 环境变量 REACT_APP_WS_URL:', process.env.REACT_APP_WS_URL || '未设置');
 
 // 通用API请求函数
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -229,8 +222,6 @@ export const aiAPI = {
     });
     
     socket.on('connect', () => {
-      console.log('Socket.IO连接已建立', socket.id);
-      
       // 通知连接成功
       onMessage({ type: 'connected' });
       
@@ -243,14 +234,11 @@ export const aiAPI = {
     });
     
     socket.on('disconnect', (reason: string) => {
-      console.log('Socket.IO连接已断开:', reason);
-      
       // 通知连接断开
       onMessage({ type: 'disconnected' });
       
       if (reason === 'io server disconnect') {
         // 服务器主动断开，不自动重连
-        console.log('服务器主动断开连接，停止重连');
         socket.disconnect();
       }
     });
@@ -259,20 +247,7 @@ export const aiAPI = {
       console.error('Socket.IO连接错误:', error.message);
     });
     
-    socket.on('reconnect', (attemptNumber: number) => {
-      console.log('Socket.IO重连成功，尝试次数:', attemptNumber);
-    });
-    
-    socket.on('reconnect_attempt', (attemptNumber: number) => {
-      console.log('Socket.IO重连尝试:', attemptNumber);
-    });
-    
-    socket.on('reconnect_error', (error: any) => {
-      console.error('Socket.IO重连失败:', error.message);
-    });
-    
     socket.on('reconnect_failed', () => {
-      console.error('Socket.IO重连失败，已达到最大重试次数');
       // 通知连接失败
       onMessage({ type: 'failed' });
     });
@@ -305,8 +280,6 @@ export const aiAPI = {
         content: message,
         timestamp: new Date().toISOString()
       });
-    } else {
-      console.error('Socket.IO连接未就绪');
     }
   },
 

@@ -14,7 +14,6 @@ export function useSimpleAI() {
   const [typing, setTyping] = useState(false);
   const [showHistoryHint, setShowHistoryHint] = useState(false);
   const aiInitializedRef = useRef(false);
-  const [hasNotifiedSearchInterest, setHasNotifiedSearchInterest] = useState(false);
   
   // 字节跳动相关状态
   const [isStreaming, setIsStreaming] = useState(false);
@@ -50,12 +49,9 @@ export function useSimpleAI() {
    */
   const initializeAI = useCallback(async () => {
     try {
-      console.log('初始化AI助手系统...');
-      
       // 先尝试加载历史聊天记录
       try {
         const history = await aiAPI.getChatHistory("1", 50);
-        console.log('历史记录API返回:', history);
         
         if (history && history.messages && history.messages.length > 0) {
           // 转换历史消息格式
@@ -68,7 +64,6 @@ export function useSimpleAI() {
             products: msg.products || []
           }));
           
-          console.log('转换后的历史消息:', historyMessages);
           setMessages(historyMessages);
           
           // 设置默认persona（从历史记录中获取或使用默认值）
@@ -83,13 +78,10 @@ export function useSimpleAI() {
           setCurrentPersona(defaultPersona);
           setCurrentSessionId("1");
           
-          console.log('加载历史聊天记录成功', { count: historyMessages.length });
           return; // 有历史记录，直接返回
-        } else {
-          console.log('没有历史记录或历史记录为空');
         }
       } catch (historyError) {
-        console.warn('加载历史记录失败:', historyError);
+        // 忽略历史记录加载失败，继续初始化
       }
       
       // 没有历史记录，初始化用户AI风格偏好
@@ -107,8 +99,6 @@ export function useSimpleAI() {
         persona: initResult.persona.id,
         timestamp: new Date().toISOString()
       }]);
-
-      console.log('AI助手系统初始化完成');
 
     } catch (error) {
       console.error("初始化AI助手失败:", error);
@@ -159,7 +149,6 @@ export function useSimpleAI() {
 
     // 调用后端大模型接口（流式）
     try {
-      console.log('开始发送消息:', text);
       setTyping(true);
       
       // 获取对话上下文
@@ -168,8 +157,6 @@ export function useSimpleAI() {
         role: 'user',
         content: text
       });
-
-      console.log('对话上下文:', context);
 
       // 创建AI消息占位符
       const assistantMessageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -186,8 +173,6 @@ export function useSimpleAI() {
       setIsStreaming(true);
       setStreamingMessageId(assistantMessageId);
 
-      console.log('开始调用流式API...');
-
       // 调用字节跳动大模型（流式）
       const result = await douyinAPI.streamChat({
         messages: context,
@@ -195,7 +180,6 @@ export function useSimpleAI() {
         temperature: 0.7,
         max_tokens: 1000
       }, (chunk: string) => {
-        console.log('收到数据块:', chunk);
         // 收到第一个数据块时隐藏思考中提示
         setTyping(false);
         // 流式更新消息内容
@@ -205,7 +189,6 @@ export function useSimpleAI() {
             : msg
         ));
       }, (products: any[], message: string, searchQuery: string) => {
-        console.log('收到商品推荐:', products);
         // 添加商品推荐消息
         const productMessage: ChatMsg = {
           id: `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -229,8 +212,6 @@ export function useSimpleAI() {
       setStreamingMessageId(null);
       setTyping(false); // 确保重置typing状态
       
-      console.log('流式消息完成并保存到数据库');
-      
     } catch (error) {
       console.error('调用大模型API失败:', error);
       setTyping(false);
@@ -252,39 +233,49 @@ export function useSimpleAI() {
    * 检查搜索兴趣并发送相关消息
    */
   const checkAndNotifySearchInterest = useCallback(() => {
-    if (hasNotifiedSearchInterest) return;
-    
     const lastSearchInterest = localStorage.getItem('lastSearchInterest');
     const lastSearchTime = localStorage.getItem('lastSearchTime');
+    const lastNotifiedSearch = localStorage.getItem('lastNotifiedSearch');
     
-    if (lastSearchInterest && lastSearchTime) {
-      const searchTime = new Date(lastSearchTime);
-      const now = new Date();
-      const timeDiff = now.getTime() - searchTime.getTime();
-      
-      if (timeDiff < 5 * 60 * 1000) {
-        setHasNotifiedSearchInterest(true);
-        
-        const message = `我注意到你刚才在搜索"${lastSearchInterest}"，有什么可以帮助你的吗？`;
-        
-        const interestMessage: ChatMsg = {
-          role: "assistant",
-          text: message,
-          persona: currentPersona?.id,
-          timestamp: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, interestMessage]);
-        setShowHistoryHint(false);
-      }
+    // 如果没有搜索记录，直接返回
+    if (!lastSearchInterest || !lastSearchTime) {
+      return;
     }
-  }, [hasNotifiedSearchInterest, currentPersona]);
+    
+    // 如果已经通知过这个搜索词，就不再通知
+    if (lastNotifiedSearch === lastSearchInterest) {
+      return;
+    }
+    
+    const searchTime = new Date(lastSearchTime);
+    const now = new Date();
+    const timeDiff = now.getTime() - searchTime.getTime();
+    
+    // 只在5分钟内且没有通知过的情况下才发送
+    if (timeDiff < 5 * 60 * 1000) {
+      // 记录已通知的搜索词
+      localStorage.setItem('lastNotifiedSearch', lastSearchInterest);
+      
+      const message = `我注意到你刚才在搜索"${lastSearchInterest}"，有什么可以帮助你的吗？`;
+      
+      const interestMessage: ChatMsg = {
+        role: "assistant",
+        text: message,
+        persona: currentPersona?.id,
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, interestMessage]);
+      setShowHistoryHint(false);
+    }
+  }, [currentPersona]);
 
   /**
    * 重置搜索兴趣通知状态
    */
   const resetSearchInterestNotification = useCallback(() => {
-    setHasNotifiedSearchInterest(false);
+    // 清除已通知的搜索记录，允许新的搜索词被通知
+    localStorage.removeItem('lastNotifiedSearch');
   }, []);
 
   // 清理函数
